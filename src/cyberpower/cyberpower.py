@@ -1,7 +1,6 @@
 import getpass
 import logging
 import re
-import time
 from typing import Any, Dict, List, Optional, Tuple
 
 import keyring
@@ -101,16 +100,3 @@ class CyberPower:
 
     def reboot(self, index: int) -> None:
         self.run(f"oltctrl index {index} act reboot")
-
-    def shell(self) -> None:
-        while self.is_open():
-            cmd = input()
-            args = cmd.split() or [""]
-            try:
-                fn = getattr(self, args[0])
-            except AttributeError:
-                print(self.run(cmd), end="")
-                if cmd == "exit":
-                    time.sleep(0.5)
-            else:
-                fn(*args[1:])
