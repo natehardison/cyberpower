@@ -21,7 +21,7 @@ CLI usage
 ---------
 ```
 usage: cyberpower [-h] [--user USER] [--verbose] [--version]
-                  host {on,off,cycle,status,shell} [{1,2,3,4,5,6,7,8}]
+                  host {on,off,cycle,status,shell} [outlet]
 
 Control a CyberPower PDU41001
 
@@ -29,8 +29,8 @@ positional arguments:
   host                  the hostname of the PDU
   {on,off,cycle,status,shell}
                         the action to run
-  {1,2,3,4,5,6,7,8}     the outlet to control (required for on/off/cycle)
-                        (default: None)
+  outlet                the name or index of the outlet to control (if None
+                        will operate on all outlets) (default: None)
 
 options:
   -h, --help            show this help message and exit

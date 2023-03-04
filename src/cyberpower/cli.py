@@ -89,7 +89,7 @@ def main() -> int:
     parser.add_argument(
         "outlet",
         nargs="?",
-        help="the name or index of the outlet to control",
+        help="the name or index of the outlet to control (if None will operate on all outlets)",
     )
     parser.add_argument("--user", default=DEFAULT_USER, help="the user to log in as")
     parser.add_argument(
