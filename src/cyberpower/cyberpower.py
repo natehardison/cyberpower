@@ -18,6 +18,7 @@ class CyberPower:
     LINE_SEPARATOR = "\r\n"
     # CyberPower will disconnect if it receives a keepalive
     KEEPALIVE_INTERVAL = 0
+    NUM_OUTLETS = 8
 
     def __init__(self, host: str, user: str, password: Optional[str] = None):
         self.host = host
@@ -92,11 +93,20 @@ class CyberPower:
                 status.append(m.groupdict())
         return status
 
-    def power_on(self, index: int) -> str:
-        return self.run(f"oltctrl index {index} act on")
+    def power_on(self, index: Optional[int] = None) -> str:
+        return self._oltctrl_action("on", index)
 
-    def power_off(self, index: int) -> str:
-        return self.run(f"oltctrl index {index} act off")
+    def power_off(self, index: Optional[int] = None) -> str:
+        return self._oltctrl_action("off", index)
 
-    def reboot(self, index: int) -> str:
-        return self.run(f"oltctrl index {index} act reboot")
+    def reboot(self, index: Optional[int] = None) -> str:
+        return self._oltctrl_action("reboot", index)
+
+    def _oltctrl_action(self, action: str, index: Optional[int] = None) -> str:
+        cmd = "oltctrl index {} act {}"
+        if index:
+            return self.run(cmd.format(index, action))
+        results = ""
+        for i in range(1, self.NUM_OUTLETS + 1):
+            results += self.run(cmd.format(i, action))
+        return results

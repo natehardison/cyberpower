@@ -2,7 +2,6 @@ import argparse
 import getpass
 import logging
 import sys
-import time
 from importlib.metadata import version
 
 from cyberpower.cyberpower import CyberPower
@@ -46,11 +45,14 @@ def do_status(args: argparse.Namespace) -> int:
 def do_power_control(args: argparse.Namespace) -> int:
     with CyberPower(args.host, args.user) as c:
         if args.action == "on":
-            c.power_on(args.outlet)
+            fn = c.power_on
         elif args.action == "off":
-            c.power_off(args.outlet)
+            fn = c.power_off
         elif args.action == "cycle":
-            c.reboot(args.outlet)
+            fn = c.reboot
+        else:
+            raise ValueError(f"unknown action: '{args.action}'")
+        fn(args.outlet)
     return 0
 
 
@@ -68,8 +70,8 @@ def main() -> int:
     parser.add_argument(
         "outlet",
         nargs="?",
-        choices=list(map(str, range(1, 9))),
-        help="the outlet to control (required for on/off/cycle)",
+        choices=list(map(str, range(1, CyberPower.NUM_OUTLETS + 1))),
+        help="the outlet to control",
     )
     parser.add_argument("--user", default=DEFAULT_USER, help="the user to log in as")
     parser.add_argument(
@@ -82,8 +84,6 @@ def main() -> int:
         return do_shell(args)
     if args.action == "status":
         return do_status(args)
-    if not args.outlet:
-        parser.error(f"outlet is required for action '{args.action}'")
     return do_power_control(args)
 
 
