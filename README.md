@@ -1,6 +1,8 @@
 cyberpower
 ==========
-A library and tool to control a CyberPower PDU41001 via SSH.
+A library and tool to control a
+[CyberPower PDU41001](https://www.cyberpowersystems.com/product/pdu/switched/pdu41001/)
+via SSH. Tested on ePDU Firmware Version 1.2.4.
 
 Why?
 * Logging into the web GUI is a pain
@@ -12,6 +14,8 @@ Features:
     there (`keyring set <host> <user>`)
 * `cyberpower <host> shell` command gives you shell access just like an
     SSH client
+    
+Establishing a connection typically takes ~5s on the LAN.
 
 CLI usage
 ---------
