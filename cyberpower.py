@@ -7,6 +7,7 @@ import time
 from importlib.metadata import version
 from typing import Dict, List, Optional, Tuple
 
+import keyring
 from paramiko import Channel, Transport
 
 DEFAULT_USER = getpass.getuser()
@@ -27,7 +28,9 @@ class CyberPower:
     def __init__(self, host: str, user: str, password: Optional[str] = None):
         self.host = host
         self.user = user
-        self.password = password
+        self.password = (
+            password or keyring.get_password(self.host, self.user) or getpass.getpass()
+        )
 
         self.transport: Optional[Transport] = None
         self.channel: Optional[Channel] = None
@@ -35,7 +38,7 @@ class CyberPower:
     def _auth_handler(
         self, title: str, instructions: str, fields: List[Tuple[str, bool]]
     ) -> List[str]:
-        return [self.password or getpass.getpass()]
+        return [self.password]
 
     def connect(self) -> str:
         if self.is_open():
