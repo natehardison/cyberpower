@@ -5,7 +5,8 @@ import re
 import sys
 import time
 from importlib.metadata import version
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
+from typing_extensions import Self
 
 import keyring
 from paramiko import Channel, Transport
@@ -39,6 +40,13 @@ class CyberPower:
         self, title: str, instructions: str, fields: List[Tuple[str, bool]]
     ) -> List[str]:
         return [self.password]
+
+    def __enter__(self) -> Self:
+        self.connect()
+        return self
+
+    def __exit__(self, *_: Any) -> None:
+        self.close()
 
     def connect(self) -> str:
         if self.is_open():
@@ -116,18 +124,44 @@ class CyberPower:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("host")
+    parser.add_argument("host", help="the hostname of the PDU")
+    parser.add_argument(
+        "action",
+        choices=("on", "off", "cycle", "status", "shell"),
+        help="the action to run",
+    )
+    parser.add_argument(
+        "outlet",
+        nargs="?",
+        choices=list(map(str, range(1, 9))),
+        help="the outlet to control",
+    )
     parser.add_argument("--user", default=DEFAULT_USER)
     parser.add_argument("--verbose", "-v", action="store_true")
     parser.add_argument("--version", "-V", action="version", version=VERSION)
     args = parser.parse_args()
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
     c = CyberPower(args.host, args.user)
-    print(c.connect(), end="")
-    try:
-        c.shell()
-    finally:
-        c.close()
+    if args.action == "shell":
+        print(c.connect(), end="")
+        try:
+            c.shell()
+        finally:
+            c.close()
+    else:
+        with c:
+            if args.action == "on":
+                print(c.power_on(args.outlet))
+            elif args.action == "off":
+                print(c.power_off(args.outlet))
+            elif args.action == "cycle":
+                print(c.reboot(args.outlet))
+            else:
+                status = c.get_status()
+                if args.outlet:
+                    print(status[args.outlet])
+                else:
+                    print(status)
     return 0
 
 
