@@ -55,7 +55,10 @@ def do_power_control(args: argparse.Namespace) -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Control a CyberPower PDU41001",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
     parser.add_argument("host", help="the hostname of the PDU")
     parser.add_argument(
         "action",
@@ -66,10 +69,12 @@ def main() -> int:
         "outlet",
         nargs="?",
         choices=list(map(str, range(1, 9))),
-        help="the outlet to control",
+        help="the outlet to control (required for on/off/cycle)",
     )
-    parser.add_argument("--user", default=DEFAULT_USER)
-    parser.add_argument("--verbose", "-v", action="store_true")
+    parser.add_argument("--user", default=DEFAULT_USER, help="the user to log in as")
+    parser.add_argument(
+        "--verbose", "-v", action="store_true", help="set logging to DEBUG"
+    )
     parser.add_argument("--version", "-V", action="version", version=VERSION)
     args = parser.parse_args()
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
