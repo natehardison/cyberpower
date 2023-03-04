@@ -88,8 +88,7 @@ class CyberPower:
             if m := re.match(
                 r"(?P<index>\d)\s+(?P<name>\S+)\s+(?P<status>(Off|On))$", line.strip()
             ):
-                for k in ("index", "name", "status"):
-                    status.append({k: m.group(k)})
+                status.append(m.groupdict())
         return status
 
     def power_on(self, index: int) -> None:
