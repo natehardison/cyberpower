@@ -1,0 +1,39 @@
+[tool.poetry]
+name = "cyberpower"
+version = "0.1.0"
+description = "SSH control of Cyber Power PDU41001"
+authors = ["Nate Hardison <natehardison@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/natehardison/cyberpower"
+
+[tool.poetry.dependencies]
+python = "^3.8.1"
+paramiko = "^3.0.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.1.0"
+flake8 = "^6.0.0"
+isort = "^5.12.0"
+mypy = "^1.0.1"
+tox = "^4.4.6"
+types-paramiko = "^3.0.0.4"
+
+[tool.poetry.scripts]
+cyberpower = "cyberpower:main"
+
+[tool.black]
+line-length = 88
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+strict = true
+strict_optional = true
+warn_no_return = true
+warn_unreachable = true
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
