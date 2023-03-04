@@ -1,12 +1,16 @@
+import argparse
 import getpass
 import logging
 import re
 import sys
 import time
-from typing import Optional
+from importlib.metadata import version
+from typing import Dict, List, Optional, Tuple
 
 from paramiko import Channel, Transport
 
+DEFAULT_USER = getpass.getuser()
+VERSION = version(__name__)
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +21,8 @@ class CyberPower:
     PROMPT = "CyberPower > "
     DEFAULT_RECV_BUFSIZE = 1024
     LINE_SEPARATOR = "\r\n"
-    KEEPALIVE_INTERVAL = 60
+    # CyberPower will disconnect if it receives a keepalive
+    KEEPALIVE_INTERVAL = 0
 
     def __init__(self, host: str, user: str, password: Optional[str] = None):
         self.host = host
@@ -27,12 +32,14 @@ class CyberPower:
         self.transport: Optional[Transport] = None
         self.channel: Optional[Channel] = None
 
-    def _auth_handler(self, *_) -> list[str]:
+    def _auth_handler(
+        self, title: str, instructions: str, fields: List[Tuple[str, bool]]
+    ) -> List[str]:
         return [self.password or getpass.getpass()]
 
-    def connect(self) -> None:
+    def connect(self) -> str:
         if self.is_open():
-            return
+            return ""
         t = Transport(self.host)
         o = t.get_security_options()
         o.kex = (self.KEX_ALGORITHM,)
@@ -45,7 +52,7 @@ class CyberPower:
         self.channel = t.open_session()
         self.channel.get_pty()
         self.channel.invoke_shell()
-        self._recv_until(self.PROMPT)
+        return self._recv_until(self.PROMPT)
 
     def is_open(self) -> bool:
         return bool(self.transport and self.transport.active)
@@ -71,14 +78,15 @@ class CyberPower:
         self.channel.sendall(cmd.encode())
         return self._recv_until(self.PROMPT)
 
-    def get_status(self) -> list:
+    def get_status(self) -> List[Dict[str, str]]:
         response = self.run("oltsta show")
         status = []
         for line in response.splitlines():
             if m := re.match(
                 r"(?P<index>\d)\s+(?P<name>\S+)\s+(?P<status>(Off|On))$", line.strip()
             ):
-                status.append({k: m.group(k)} for k in ("index", "name", "status"))
+                for k in ("index", "name", "status"):
+                    status.append({k: m.group(k)})
         return status
 
     def power_on(self, index: int) -> None:
@@ -105,11 +113,15 @@ class CyberPower:
 
 
 def main() -> int:
-    host = "192.168.1.62"
-    user = "nate"
-    logging.basicConfig(level=logging.DEBUG)
-    c = CyberPower(host, user)
-    c.connect()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("host")
+    parser.add_argument("--user", default=DEFAULT_USER)
+    parser.add_argument("--verbose", "-v", action="store_true")
+    parser.add_argument("--version", "-V", action="version", version=VERSION)
+    args = parser.parse_args()
+    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
+    c = CyberPower(args.host, args.user)
+    print(c.connect(), end="")
     try:
         c.shell()
     finally:
