@@ -23,11 +23,11 @@ def do_shell(args: argparse.Namespace) -> int:
             try:
                 fn = getattr(c, cmdargs[0])
             except AttributeError:
-                print(c.run(cmd), end="")
                 if cmd == "exit":
-                    time.sleep(0.5)
+                    break
+                print(c.run(cmd), end="")
             else:
-                fn(*cmdargs[1:])
+                print(fn(*cmdargs[1:]), end="")
     finally:
         c.close()
     return 0

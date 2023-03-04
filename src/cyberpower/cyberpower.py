@@ -92,11 +92,11 @@ class CyberPower:
                 status.append(m.groupdict())
         return status
 
-    def power_on(self, index: int) -> None:
-        self.run(f"oltctrl index {index} act on")
+    def power_on(self, index: int) -> str:
+        return self.run(f"oltctrl index {index} act on")
 
-    def power_off(self, index: int) -> None:
-        self.run(f"oltctrl index {index} act off")
+    def power_off(self, index: int) -> str:
+        return self.run(f"oltctrl index {index} act off")
 
-    def reboot(self, index: int) -> None:
-        self.run(f"oltctrl index {index} act reboot")
+    def reboot(self, index: int) -> str:
+        return self.run(f"oltctrl index {index} act reboot")
