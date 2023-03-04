@@ -1,7 +1,7 @@
 import getpass
 import logging
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import keyring
 from paramiko import Channel, Transport
@@ -83,7 +83,16 @@ class CyberPower:
         self.channel.sendall(cmd.encode())
         return self._recv_until(self.PROMPT)
 
-    def get_status(self) -> List[Dict[str, str]]:
+    def get_status(
+        self, outlet: Optional[Union[int, str]] = None
+    ) -> Sequence[Dict[str, str]]:
+        if outlet:
+            status = self.get_status()
+            for o in status:
+                if o["index"] == str(outlet) or o["name"] == outlet:
+                    return [o]
+            else:
+                raise KeyError(outlet)
         response = self.run("oltsta show")
         status = []
         for line in response.splitlines():
@@ -93,18 +102,24 @@ class CyberPower:
                 status.append(m.groupdict())
         return status
 
-    def power_on(self, index: Optional[int] = None) -> str:
-        return self._oltctrl_action("on", index)
+    def power_on(self, outlet: Optional[Union[int, str]] = None) -> str:
+        return self._oltctrl_action("on", outlet)
 
-    def power_off(self, index: Optional[int] = None) -> str:
-        return self._oltctrl_action("off", index)
+    def power_off(self, outlet: Optional[Union[int, str]] = None) -> str:
+        return self._oltctrl_action("off", outlet)
 
-    def reboot(self, index: Optional[int] = None) -> str:
-        return self._oltctrl_action("reboot", index)
+    def reboot(self, outlet: Optional[Union[int, str]] = None) -> str:
+        return self._oltctrl_action("reboot", outlet)
 
-    def _oltctrl_action(self, action: str, index: Optional[int] = None) -> str:
+    def _oltctrl_action(
+        self, action: str, outlet: Optional[Union[int, str]] = None
+    ) -> str:
         cmd = "oltctrl index {} act {}"
-        if index:
+        if outlet:
+            if isinstance(outlet, int) or outlet.isnumeric():
+                index = int(outlet)
+            else:
+                index = int(self.get_status(outlet)[0]["index"])
             return self.run(cmd.format(index, action))
         results = ""
         for i in range(1, self.NUM_OUTLETS + 1):

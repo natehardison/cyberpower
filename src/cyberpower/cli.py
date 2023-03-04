@@ -34,17 +34,9 @@ def do_shell(args: argparse.Namespace) -> int:
 
 def do_status(args: argparse.Namespace) -> int:
     with CyberPower(args.host, args.user) as c:
-        status = c.get_status()
+        status = c.get_status(args.outlet)
         if args.outlet:
-            if args.outlet.isnumeric():
-                print(status[int(args.outlet) - 1])
-            else:
-                for o in status:
-                    if o["name"] == args.outlet:
-                        print(o)
-                        break
-                else:
-                    raise KeyError(f"could not find outlet with name '{args.outlet}'")
+            print(status[0])
         else:
             print(status)
     return 0
@@ -60,18 +52,7 @@ def do_power_control(args: argparse.Namespace) -> int:
             fn = c.reboot
         else:
             raise ValueError(f"unknown action: '{args.action}'")
-        if args.outlet and not args.outlet.isnumeric():
-            status = c.get_status()
-            for o in status:
-                if o["name"] == args.outlet:
-                    outlet = o["index"]
-                    break
-            else:
-                raise KeyError(f"could not find outlet with name '{args.outlet}'")
-        else:
-            outlet = args.outlet
-
-        fn(int(outlet))
+        fn(args.outlet)
     return 0
 
 
