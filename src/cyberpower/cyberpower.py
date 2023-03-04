@@ -1,18 +1,12 @@
-import argparse
 import getpass
 import logging
 import re
-import sys
 import time
-from importlib.metadata import version
 from typing import Any, Dict, List, Optional, Tuple
-from typing_extensions import Self
 
 import keyring
 from paramiko import Channel, Transport
-
-DEFAULT_USER = getpass.getuser()
-VERSION = version(__name__)
+from typing_extensions import Self
 
 logger = logging.getLogger(__name__)
 
@@ -120,50 +114,3 @@ class CyberPower:
                     time.sleep(0.5)
             else:
                 fn(*args[1:])
-
-
-def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("host", help="the hostname of the PDU")
-    parser.add_argument(
-        "action",
-        choices=("on", "off", "cycle", "status", "shell"),
-        help="the action to run",
-    )
-    parser.add_argument(
-        "outlet",
-        nargs="?",
-        choices=list(map(str, range(1, 9))),
-        help="the outlet to control",
-    )
-    parser.add_argument("--user", default=DEFAULT_USER)
-    parser.add_argument("--verbose", "-v", action="store_true")
-    parser.add_argument("--version", "-V", action="version", version=VERSION)
-    args = parser.parse_args()
-    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
-    c = CyberPower(args.host, args.user)
-    if args.action == "shell":
-        print(c.connect(), end="")
-        try:
-            c.shell()
-        finally:
-            c.close()
-    else:
-        with c:
-            if args.action == "on":
-                print(c.power_on(args.outlet))
-            elif args.action == "off":
-                print(c.power_off(args.outlet))
-            elif args.action == "cycle":
-                print(c.reboot(args.outlet))
-            else:
-                status = c.get_status()
-                if args.outlet:
-                    print(status[args.outlet])
-                else:
-                    print(status)
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())

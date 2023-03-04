@@ -6,6 +6,9 @@ authors = ["Nate Hardison <natehardison@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/natehardison/cyberpower"
+packages = [
+    { include = "cyberpower", from = "src" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.8.1"
@@ -23,7 +26,7 @@ ipython = "^8.11.0"
 typing-extensions = "^4.5.0"
 
 [tool.poetry.scripts]
-cyberpower = "cyberpower:main"
+cyberpower = "cyberpower.cli:main"
 
 [tool.poetry-dynamic-versioning]
 enable = true

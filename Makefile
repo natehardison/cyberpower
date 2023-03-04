@@ -1,7 +1,13 @@
 .PHONY: pretty
 pretty:
-	poetry run black ${CURDIR}
-	poetry run isort ${CURDIR} 
+	poetry run black src/cyberpower/
+	poetry run isort src/cyberpower/
+
+lint:
+	poetry run flake8 src/cyberpower/
+
+typecheck:
+	poetry run mypy src/cyberpower/
 
 .PHONY: clean
 clean:
