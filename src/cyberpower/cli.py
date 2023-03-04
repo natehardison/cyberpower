@@ -36,7 +36,15 @@ def do_status(args: argparse.Namespace) -> int:
     with CyberPower(args.host, args.user) as c:
         status = c.get_status()
         if args.outlet:
-            print(status[args.outlet])
+            if args.outlet.isnumeric():
+                print(status[int(args.outlet) - 1])
+            else:
+                for o in status:
+                    if o["name"] == args.outlet:
+                        print(o)
+                        break
+                else:
+                    raise KeyError(f"could not find outlet with name '{args.outlet}'")
         else:
             print(status)
     return 0
@@ -52,7 +60,18 @@ def do_power_control(args: argparse.Namespace) -> int:
             fn = c.reboot
         else:
             raise ValueError(f"unknown action: '{args.action}'")
-        fn(args.outlet)
+        if args.outlet and not args.outlet.isnumeric():
+            status = c.get_status()
+            for o in status:
+                if o["name"] == args.outlet:
+                    outlet = o["index"]
+                    break
+            else:
+                raise KeyError(f"could not find outlet with name '{args.outlet}'")
+        else:
+            outlet = args.outlet
+
+        fn(int(outlet))
     return 0
 
 
@@ -70,8 +89,7 @@ def main() -> int:
     parser.add_argument(
         "outlet",
         nargs="?",
-        choices=list(map(str, range(1, CyberPower.NUM_OUTLETS + 1))),
-        help="the outlet to control",
+        help="the name or index of the outlet to control",
     )
     parser.add_argument("--user", default=DEFAULT_USER, help="the user to log in as")
     parser.add_argument(
