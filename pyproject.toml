@@ -14,6 +14,7 @@ packages = [
 python = "^3.8.1"
 keyring = "^23.13.1"
 paramiko = "^3.0.0"
+typing-extensions = "^4.5.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"
@@ -23,7 +24,6 @@ mypy = "^1.0.1"
 tox = "^4.4.6"
 types-paramiko = "^3.0.0.4"
 ipython = "^8.11.0"
-typing-extensions = "^4.5.0"
 
 [tool.poetry.scripts]
 cyberpower = "cyberpower.cli:main"

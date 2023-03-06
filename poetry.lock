@@ -1043,7 +1043,7 @@ cryptography = ">=37.0.0"
 name = "typing-extensions"
 version = "4.5.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1103,4 +1103,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "0815834d18ffd55625738985ca3a45ad9b828915401eafb862ad84e7ad9284f6"
+content-hash = "f4c5424c5a84ff9fcf9d14a1ef101f1eff1c41f950e8e8c712143b31b6e0fe02"
