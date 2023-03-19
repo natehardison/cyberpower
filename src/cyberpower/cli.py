@@ -1,6 +1,9 @@
 import argparse
+import atexit
 import getpass
 import logging
+import os
+import readline
 import sys
 from importlib.metadata import version
 
@@ -9,10 +12,22 @@ from cyberpower.cyberpower import CyberPower
 DEFAULT_USER = getpass.getuser()
 VERSION = version(__package__)
 
+HISTFILE = os.path.join(os.path.expanduser("~"), ".cyberpower")
+HISTLEN = 1000
+
 logger = logging.getLogger(__name__)
 
 
 def do_shell(args: argparse.Namespace) -> int:
+    try:
+        readline.read_history_file(HISTFILE)
+        # default history len is -1 (infinite), which may grow unruly
+        readline.set_history_length(HISTLEN)
+    except FileNotFoundError:
+        pass
+
+    atexit.register(readline.write_history_file, HISTFILE)
+
     c = CyberPower(args.host, args.user)
     print(c.connect(), end="")
     try:
