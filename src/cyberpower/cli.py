@@ -18,7 +18,7 @@ HISTLEN = 1000
 logger = logging.getLogger(__name__)
 
 
-def do_shell(args: argparse.Namespace) -> int:
+def do_shell(args: argparse.Namespace) -> int:  # noqa: C901
     try:
         readline.read_history_file(HISTFILE)
         # default history len is -1 (infinite), which may grow unruly
@@ -29,19 +29,26 @@ def do_shell(args: argparse.Namespace) -> int:
     atexit.register(readline.write_history_file, HISTFILE)
 
     c = CyberPower(args.host, args.user)
-    print(c.connect(), end="")
+    banner = c.connect()
     try:
+        print(banner)
         while c.is_open():
-            cmd = input()
-            cmdargs = cmd.split() or [""]
             try:
-                fn = getattr(c, cmdargs[0])
-            except AttributeError:
-                if cmd == "exit":
+                cmd = input(c.PROMPT)
+                cmdargs = cmd.split() or [""]
+                try:
+                    fn = getattr(c, cmdargs[0])
+                except AttributeError:
+                    if cmd == "exit":
+                        break
+                    print(c.run(cmd))
+                else:
+                    print(fn(*cmdargs[1:]))
+            except KeyboardInterrupt:
+                if c.channel:
+                    c.channel.send(b"\x03")
+                else:
                     break
-                print(c.run(cmd), end="")
-            else:
-                print(fn(*cmdargs[1:]), end="")
     finally:
         c.close()
     return 0

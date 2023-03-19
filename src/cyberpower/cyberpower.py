@@ -1,7 +1,7 @@
 import getpass
 import logging
 import re
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, List, Mapping, Optional, Sequence, Tuple, Union
 
 import keyring
 from paramiko import Channel, Transport
@@ -43,6 +43,7 @@ class CyberPower:
         self.close()
 
     def connect(self) -> str:
+        """Connect to the PDU and return the received welcome banner."""
         if self.is_open():
             return ""
         t = Transport(self.host)
@@ -57,12 +58,15 @@ class CyberPower:
         self.channel = t.open_session()
         self.channel.get_pty()
         self.channel.invoke_shell()
-        return self._recv_until(self.PROMPT)
+        output = self._recv_until(self.PROMPT).splitlines()
+        return "\n".join(output[:-1])
 
     def is_open(self) -> bool:
+        """True if the connection is open; False otherwise."""
         return bool(self.transport and self.transport.active)
 
     def close(self) -> None:
+        """Close the connection. Do nothing if not open."""
         if self.is_open():
             assert self.transport
             self.transport.close()
@@ -77,15 +81,26 @@ class CyberPower:
                 return data
 
     def run(self, cmd: str) -> str:
+        """Run a command and return the output."""
         assert self.channel
         if cmd != "?" and not cmd.endswith(self.LINE_SEPARATOR):
             cmd += self.LINE_SEPARATOR
         self.channel.sendall(cmd.encode())
-        return self._recv_until(self.PROMPT)
+        output = self._recv_until(self.PROMPT).splitlines()
+        output.pop()
+        return "\n".join(output)
 
     def get_status(
         self, outlet: Optional[Union[int, str]] = None
-    ) -> Sequence[Dict[str, str]]:
+    ) -> Sequence[Mapping[str, str]]:
+        """Get status of the specified outlet (or all outlets if unspecified).
+
+        Each item in the list is a mapping representing the outlet, with the
+        following keys:
+            - index: the index of the outlet (1-8)
+            - name: the user-provided name for the outlet
+            - status: Off or On
+        """
         if outlet:
             status = self.get_status()
             for o in status:
@@ -100,15 +115,18 @@ class CyberPower:
                 r"(?P<index>\d)\s+(?P<name>\S+)\s+(?P<status>(Off|On))$", line.strip()
             ):
                 status.append(m.groupdict())
-        return status
+        return sorted(status, key=lambda o: o["index"])
 
     def power_on(self, outlet: Optional[Union[int, str]] = None) -> str:
+        """Power on the specified outlet (or all outlets if unspecified)."""
         return self._oltctrl_action("on", outlet)
 
     def power_off(self, outlet: Optional[Union[int, str]] = None) -> str:
+        """Power off the specified outlet (or all outlets if unspecified)."""
         return self._oltctrl_action("off", outlet)
 
     def reboot(self, outlet: Optional[Union[int, str]] = None) -> str:
+        """Reboot the specified outlet (or all outlets if unspecified)."""
         return self._oltctrl_action("reboot", outlet)
 
     def _oltctrl_action(
