@@ -1,13 +1,7 @@
 .PHONY: pretty
 pretty:
-	poetry run black src/cyberpower/
-	poetry run isort src/cyberpower/
-
-lint:
-	poetry run flake8 src/cyberpower/
-
-typecheck:
-	poetry run mypy src/cyberpower/
+	poetry run black .
+	poetry run isort .
 
 .PHONY: clean
 clean:

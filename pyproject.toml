@@ -39,6 +39,9 @@ line-length = 88
 profile = "black"
 
 [tool.mypy]
+mypy_path = "src"
+files = ["src"]
+pretty = true
 strict = true
 strict_optional = true
 warn_no_return = true
