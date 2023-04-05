@@ -14,7 +14,7 @@ Features:
     there (`keyring set <host> <user>`)
 * `cyberpower <host> shell` command gives you shell access just like an
     SSH client
-    
+
 Establishing a connection typically takes ~5s on the LAN.
 
 CLI usage

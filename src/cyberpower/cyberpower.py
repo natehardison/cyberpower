@@ -81,7 +81,14 @@ class CyberPower:
                 return data
 
     def run(self, cmd: str) -> str:
-        """Run a command and return the output."""
+        """Run a command and return the output.
+
+        Arguments:
+            cmd: the command to run
+
+        Returns:
+            the output of the command
+        """
         assert self.channel
         if cmd != "?" and not cmd.endswith(self.LINE_SEPARATOR):
             cmd += self.LINE_SEPARATOR
@@ -95,11 +102,15 @@ class CyberPower:
     ) -> Sequence[Mapping[str, str]]:
         """Get status of the specified outlet (or all outlets if unspecified).
 
-        Each item in the list is a mapping representing the outlet, with the
-        following keys:
-            - index: the index of the outlet (1-8)
-            - name: the user-provided name for the outlet
-            - status: Off or On
+        Arguments:
+            outlet: the name or index of the outlet
+
+        Returns:
+            Each item in the sequence is a mapping representing the outlet, with the following keys:
+
+                * index: the index of the outlet (1-8)
+                * name: the user-provided name for the outlet
+                * status: Off or On
         """
         if outlet:
             status = self.get_status()
@@ -118,15 +129,36 @@ class CyberPower:
         return sorted(status, key=lambda o: o["index"])
 
     def power_on(self, outlet: Optional[Union[int, str]] = None) -> str:
-        """Power on the specified outlet (or all outlets if unspecified)."""
+        """Power on the specified outlet (or all outlets if unspecified).
+
+        Arguments:
+            outlet: the name or index of the outlet
+
+        Returns:
+            The result of the action
+        """
         return self._oltctrl_action("on", outlet)
 
     def power_off(self, outlet: Optional[Union[int, str]] = None) -> str:
-        """Power off the specified outlet (or all outlets if unspecified)."""
+        """Power off the specified outlet (or all outlets if unspecified).
+
+        Arguments:
+            outlet: the name or index of the outlet
+
+        Returns:
+            The result of the action
+        """
         return self._oltctrl_action("off", outlet)
 
     def reboot(self, outlet: Optional[Union[int, str]] = None) -> str:
-        """Reboot the specified outlet (or all outlets if unspecified)."""
+        """Reboot the specified outlet (or all outlets if unspecified).
+
+        Arguments:
+            outlet: the name or index of the outlet
+
+        Returns:
+            The result of the action
+        """
         return self._oltctrl_action("reboot", outlet)
 
     def _oltctrl_action(

@@ -1,0 +1,9 @@
+# mkdocs.yml
+site_name: cyberpower
+
+theme:
+  name: "material"
+
+plugins:
+- search
+- mkdocstrings
